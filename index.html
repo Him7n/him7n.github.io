@@ -1,2 +1,390 @@
- <img src="https://i.pinimg.com/originals/75/b3/c8/75b3c8eca95d917c650cd574b91db7f7.gif" alt="prrrr" width="500" height="600"> 
-<h3>wkwkwkw </h3>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>him7n ~ portfolio (terminal)</title>
+
+<!-- monospace fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#060606;
+    --screen:#05110b;
+    --text:#8cff9a;      /* crt green */
+    --accent:#f6c96b;    /* amber accent */
+    --muted:#7a8b78;
+    --red:#ff6b6b;
+    --glass: rgba(255,255,255,0.02);
+    --crt-scan: rgba(0,0,0,0.06);
+    --shadow: 0 10px 40px rgba(0,0,0,0.7);
+    font-family: "Fira Code", "JetBrains Mono", monospace;
+  }
+
+  /* full-screen terminal */
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#020202 0%, #050505 50%);color:var(--text);overflow:hidden}
+  .screen {
+    box-sizing:border-box;
+    position:fixed;
+    inset:0;
+    padding:24px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    background: radial-gradient(1200px 600px at 10% 10%, rgba(0,80,40,0.03), transparent 10%) ,
+                linear-gradient(180deg,#030403 0%, #05110b 60%);
+  }
+
+  /* terminal area */
+  .term {
+    width: min(1400px, 96vw);
+    height: min(920px, 94vh);
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.45));
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.03);
+    overflow: hidden;
+    display:flex;
+    flex-direction:column;
+    outline: 2px solid rgba(0,255,128,0.02);
+  }
+
+  /* CRT bezel glow */
+  .term::before{
+    content:"";
+    pointer-events:none;
+    position:absolute;
+    inset:auto;
+    width:100%;
+    height:100%;
+    left:0;
+    top:0;
+    box-shadow: 0 0 120px rgba(0,255,160,0.02), inset 0 0 40px rgba(0,100,60,0.03);
+    mix-blend-mode:screen;
+  }
+
+  /* scanlines */
+  .screen .scanlines{
+    pointer-events:none;
+    position:absolute;
+    inset:0;
+    background-image: repeating-linear-gradient(transparent 0px, transparent 1px, rgba(0,0,0,0.03) 2px);
+    mix-blend-mode:multiply;
+    opacity:0.75;
+  }
+
+  .term-top {
+    display:flex;
+    gap:12px;
+    align-items:center;
+    padding:14px 18px;
+    border-bottom:1px solid rgba(255,255,255,0.03);
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+  }
+  .dot { width:12px;height:12px;border-radius:50% }
+  .dot.r{ background: var(--red) }
+  .dot.y{ background: var(--accent) }
+  .dot.g{ background: #47f07a }
+
+  .title {
+    color:var(--muted);
+    margin-left:8px;
+    font-weight:700;
+    letter-spacing:0.06em;
+    font-size:0.95rem;
+  }
+
+  /* the main terminal body (scrollable) */
+  .term-body {
+    position:relative;
+    padding:32px;
+    font-size:16px;
+    line-height:1.35;
+    font-weight:600;
+    color:var(--text);
+    overflow:auto;
+    flex:1;
+    background:
+      radial-gradient(800px 200px at 10% 10%, rgba(0,255,150,0.01), transparent 10%);
+  }
+
+  /* ascii banner */
+  .ascii {
+    white-space:pre;
+    font-family: "JetBrains Mono","Fira Code", monospace;
+    font-size:14px;
+    color:var(--text);
+    text-shadow: 0 0 14px rgba(0,255,140,0.06);
+    margin-bottom:18px;
+    letter-spacing:0.01em;
+  }
+
+  .desc { color:var(--muted); font-style:italic; margin-bottom:10px }
+  .skills { color:var(--accent); font-weight:700; margin:14px 0; }
+
+  .out { margin:8px 0 12px 0; color:var(--text); font-weight:700; white-space:pre-wrap; }
+
+  /* input row */
+  .input-row {
+    display:flex;
+    gap:8px;
+    align-items:center;
+    margin-top:18px;
+    font-size:1.02rem;
+    position:sticky;
+    bottom:0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.2));
+    padding-top:12px;
+  }
+
+  .prompt { color:var(--accent); font-weight:900; margin-right:6px; }
+  .cwd { color: #83f0c7; margin-right:6px; font-weight:800 }
+  .dollar { color:var(--text) }
+
+  input.cmd {
+    background:transparent;
+    border:none;
+    outline:none;
+    color:var(--text);
+    font-family:inherit;
+    font-weight:800;
+    font-size:1.03rem;
+    width:60%;
+    caret-color:var(--accent);
+  }
+
+  /* clickable link style inside outputs */
+  a.terminal-link { color:var(--accent); text-decoration:none; border-bottom:1px dashed rgba(255,200,120,0.15) }
+  a.terminal-link:hover{ color:var(--text); border-bottom-color:var(--accent) }
+
+  /* small helpers */
+  .muted { color:var(--muted) }
+  .error { color:var(--red); font-weight:900 }
+
+  /* matrix overlay (hidden unless activated) */
+  .matrix {
+    pointer-events:none;
+    position:absolute;
+    inset:0;
+    z-index:10;
+    font-family:monospace;
+    color:#48ff86;
+    opacity:0.12;
+  }
+
+  /* responsive */
+  @media (max-width:820px){
+    .term{ border-radius:0; width:100vw; height:100vh; min-height:100vh}
+    .term-body{ padding:18px; font-size:15px }
+    .ascii{ font-size:12px }
+    input.cmd{ width:calc(100% - 120px) }
+  }
+
+  /* subtle scanline flicker animation */
+  @keyframes flicker {
+    0% { opacity:0.75 }
+    50% { opacity:0.88 }
+    100% { opacity:0.75 }
+  }
+  .screen .scanlines { animation:flicker 3s ease-in-out infinite }
+
+  /* focus ring when typing */
+  input.cmd:focus { box-shadow: 0 0 20px rgba(255,200,120,0.03) }
+</style>
+</head>
+<body>
+  <div class="screen" role="application" aria-label="Portfolio terminal">
+    <div class="term" id="term">
+      <div class="term-top">
+        <div class="dot r" aria-hidden="true"></div>
+        <div class="dot y" aria-hidden="true"></div>
+        <div class="dot g" aria-hidden="true"></div>
+        <div class="title">him7n@omarchy </div>
+      </div>
+
+      <div class="term-body" id="term-body" tabindex="0" aria-live="polite">
+        <div class="ascii" id="ascii">
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡤⠚⣷⠀⠀⣀⣤⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡞⣟⢀⡴⠋⠀⠀⣿⠖⠋⢀⡏⠀⠀⠀⡀⡀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⢀⡀⡼⠀⢸⡟⡸⠀⠀⠀⠃⠀⠀⢸⡧⠜⠛⠛⣻⠃⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⢺⢾⡃⠀⠈⣴⠁⢻⡀⠀⠀⢀⡠⠀⠀⠀⠀⢸⣇⣤⡀⠀
+⠀⠀⠀⠀⠀⠀⠀⠸⡜⠂⠀⠀⣟⠀⢸⠑⠀⠰⠁⠀⠀⠀⠀⠀⠛⠉⡼⠁⠀
+⠀⠀⠀⠀⠀⠀⠀⠈⣷⣾⣿⣿⣿⣿⣾⣶⣶⣤⣀⡀⢰⠕⠋⠀⠀⠸⠧⣤⡄
+⠀⠀⠀⠀⠀⠀⠀⢀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⣔⠈⣤⣶⡚⠁⠀
+⠀⠀⠀⠀⣠⣶⡀⢸⡟⠿⡿⠿⡟⠻⠿⣿⣿⣿⣿⣿⣿⣿⠿⣿⠋⠁⠀⠀⠀
+⠀⠀⠀⢰⢧⡷⡿⢘⡎⠀⠀⠐⣶⢶⣲⠈⠙⠋⠉⠉⠁⡘⡯⣿⡶⣆⡀⠀⠀
+⠀⠀⠀⢾⢈⣼⣿⣤⣿⣶⣶⣶⣿⣿⣧⣤⣄⣀⣀⣤⣾⣿⣿⢯⢇⣿⢳⠀⠀
+⠀⠀⠀⠈⠙⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣌⣷⣬⠏⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠉⠙⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠻⠟⠋⠁⠀⠀⠀
+⠀⠀⠀⠀⢀⣀⣀⡀⣰⣿⣿⣿⣿⣿⣿⣿⡿⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⣿⣿⣿⣿⢿⣿⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⢀⣤⣶⣴⣿⣿⣿⡧⠀⠉⠙⢿⣿⣿⣿⣿⣾⣶⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠉⠛⠛⠿⣿⣿⡇⠀⠀⠀⠀⠻⣿⣿⣿⡿⠿⣿⣿⣿⡀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠁⠀⠀⠸⣿⣿⠁⠀⠀⠀⠀⠀⠀⠀
+
+        </div>
+
+        <div class="desc">type <span style="color:var(--accent)"><strong>/help</strong></span> for commands. ↑/↓ = history • Tab = autocomplete • Ctrl+L = clear</div>
+
+        <div class="skills">GitOps Intern • Linux enthusiast • vim/emacs • Nix/Guix • Arch lover</div>
+
+        <div id="output" class="out"></div>
+
+        <!-- input row -->
+        <div class="input-row" aria-hidden="false">
+          <div class="prompt" id="prompt-label">him7n@omarchy</div>
+          <div class="cwd" id="cwd">~</div>
+          <div class="dollar">$</div>
+          <input id="cmd" class="cmd" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus />
+        </div>
+      </div>
+    </div>
+
+    <!-- scanlines + matrix overlay -->
+    <div class="scanlines" aria-hidden="true"></div>
+    <canvas id="matrix" class="matrix" style="display:none"></canvas>
+  </div>
+
+<script>
+/* ---------------------
+   Terminal JS
+   - history (arrow keys)
+   - tab completion
+   - commands
+   - anime ascii easter eggs
+   - matrix effect
+   - Ctrl+L clears
+   --------------------- */
+
+(function(){
+  const input = document.getElementById('cmd');
+  const out = document.getElementById('output');
+  const ascii = document.getElementById('ascii');
+  const termBody = document.getElementById('term-body');
+  const matrixCanvas = document.getElementById('matrix');
+
+  const COMMANDS = [
+    'help','about','projects','skills','links','ls','pwd','whoami',
+    'neofetch','cat','echo','open','anime','matrix','clear','exit','sudo'
+  ];
+
+  const DATA = {
+    about: "Himanshu Sharma (him7n)\n3rd year @ IIIT Lucknow\nLinux + GitOps intern\nNix/Guix + Arch enjoyer",
+    skills: "vim · emacs · nix · guix · linux · gitops · zsh · tmux · docker · react · three.js",
+    links: "GitHub: https://github.com/him7n\nBlog: https://him7n.dev\nEmail: kanekihiman@gmail.com"
+  };
+
+  const ANIME_ASCII = [
+` (\\_/)\n ( •_•)\n / >💻   - neko says hi`,
+`   ┌─┐\n   │▒│ /\\\n   │▒│/  \\\n   │▒ /▒/\\\n   │▒/▒/  \\\n   └──────┘ - tiny mecha`
+  ];
+
+  const history = [];
+  let histIndex = -1;
+
+  function appendLine(html){
+    out.innerHTML += html + '<br>';
+    termBody.scrollTop = termBody.scrollHeight;
+  }
+
+  function printPrompt(cmd){
+    appendLine(
+      `<span style="color:var(--accent)">him7n@omarchy</span> <span style="color:var(--text)">~</span> $ ${cmd}`
+    );
+  }
+
+  function runCommand(raw){
+    const args = raw.trim().split(/\s+/);
+    const cmd = args.shift();
+    if(!cmd) return;
+
+    switch(cmd){
+      case 'help': appendLine("Commands: " + COMMANDS.join(' ')); break;
+      case 'about': appendLine(DATA.about.replace(/\n/g,"<br>")); break;
+      case 'skills': appendLine(DATA.skills); break;
+      case 'links': appendLine(DATA.links.replace(/(https?:\/\/[^\s]+)/g, `<a href="$1" target="_blank">$1</a>`).replace(/\n/g,"<br>")); break;
+      case 'ls': appendLine("about  skills  links"); break;
+      case 'pwd': appendLine("/home/him7n"); break;
+      case 'whoami': appendLine("him7n"); break;
+      case 'neofetch': appendLine("him7n@omarchy<br>OS: NixOS + Arch<br>Shell: zsh<br>Editor: Vim/Emacs"); break;
+      case 'echo': appendLine(args.join(" ")); break;
+      case 'cat': appendLine(DATA[args[0]] || `cat: ${args[0]}: No such file`); break;
+      case 'anime': appendLine(ANIME_ASCII[Math.floor(Math.random()*ANIME_ASCII.length)].replace(/\n/g,"<br>")); break;
+      case 'matrix': toggleMatrix(); appendLine("toggled matrix rain"); break;
+      case 'clear': out.innerHTML = ""; boot(); break;
+      case 'exit': appendLine("bye."); break;
+      case 'sudo': appendLine("nice try. no root here."); break;
+      default: appendLine(`<span class="error">zsh: command not found: ${cmd}</span>`);
+    }
+  }
+
+  input.addEventListener('keydown', e=>{
+    if(e.key === 'Enter'){
+      const raw = input.value;
+      printPrompt(raw);
+      runCommand(raw);
+      if(raw) history.push(raw);
+      histIndex = history.length;
+      input.value = '';
+      e.preventDefault();
+    }
+    else if(e.key === 'ArrowUp'){
+      if(histIndex > 0){ histIndex--; input.value = history[histIndex]; }
+      e.preventDefault();
+    }
+    else if(e.key === 'ArrowDown'){
+      if(histIndex < history.length-1){ histIndex++; input.value = history[histIndex]; }
+      else { input.value = ''; histIndex = history.length; }
+      e.preventDefault();
+    }
+    else if(e.key === 'Tab'){
+      e.preventDefault();
+      const match = COMMANDS.filter(c => c.startsWith(input.value));
+      if(match.length === 1) input.value = match[0];
+      else if(match.length > 1) appendLine(match.join("   "));
+    }
+    else if(e.ctrlKey && e.key.toLowerCase() === 'l'){
+      out.innerHTML = ""; boot(); e.preventDefault();
+    }
+  });
+
+  // matrix
+  let matrixRunning=false, matrixId=null;
+  function toggleMatrix(){
+    if(matrixRunning){ stopMatrix(); return; }
+    startMatrix();
+  }
+  function startMatrix(){
+    matrixCanvas.style.display = 'block';
+    const ctx = matrixCanvas.getContext('2d');
+    matrixCanvas.width = window.innerWidth;
+    matrixCanvas.height = window.innerHeight;
+    const cols = Math.floor(matrixCanvas.width/14);
+    const ypos = Array(cols).fill(0);
+    matrixRunning=true;
+    matrixId=setInterval(()=>{
+      ctx.fillStyle='rgba(0,0,0,0.05)';
+      ctx.fillRect(0,0,matrixCanvas.width,matrixCanvas.height);
+      ctx.fillStyle='#00ff88'; ctx.font='14px monospace';
+      ypos.forEach((y,ind)=>{
+        const text=String.fromCharCode(33+Math.random()*94);
+        ctx.fillText(text,ind*14,y);
+        if(y>matrixCanvas.height && Math.random()>0.975) ypos[ind]=0; else ypos[ind]=y+14;
+      });
+    },50);
+  }
+  function stopMatrix(){ clearInterval(matrixId); matrixCanvas.style.display='none'; matrixRunning=false; }
+
+  function boot(){
+    appendLine("<br>Type 'help' to get started.");
+    input.focus();
+  }
+  boot();
+})();
+</script>
+</body>
+</html>
