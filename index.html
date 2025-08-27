@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>him7n ~ portfolio (terminal)</title>
+<title>him7n</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23060606'/><text x='50' y='65' text-anchor='middle' font-family='monospace' font-size='50' font-weight='bold' fill='%238cff9a'>H</text></svg>">
 
 <!-- monospace fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,7 +26,7 @@
   }
 
   /* full-screen terminal */
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,#020202 0%, #050505 50%);color:var(--text);overflow:hidden}
+  html,body{height:100%;margin:0;background:transparent;color:var(--text);overflow:hidden}
   .screen {
     box-sizing:border-box;
     position:fixed;
@@ -34,8 +35,7 @@
     display:flex;
     align-items:flex-start;
     justify-content:center;
-    background: radial-gradient(1200px 600px at 10% 10%, rgba(0,80,40,0.03), transparent 10%) ,
-                linear-gradient(180deg,#030403 0%, #05110b 60%);
+    background: transparent;
   }
 
   /* terminal area */
@@ -380,7 +380,7 @@
   function stopMatrix(){ clearInterval(matrixId); matrixCanvas.style.display='none'; matrixRunning=false; }
 
   function boot(){
-    appendLine("<br>Type '/help' to get started.");
+    appendLine("<br>Type 'help' to get started.");
     input.focus();
   }
   boot();
