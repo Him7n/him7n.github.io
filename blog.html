@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>him7n / blog</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23060606'/><text x='50' y='65' text-anchor='middle' font-family='monospace' font-size='50' font-weight='bold' fill='%238cff9a'>H</text></svg>">
+
+<!-- monospace fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#060606;
+    --screen:#05110b;
+    --text:#8cff9a;
+    --accent:#f6c96b;
+    --muted:#7a8b78;
+    --red:#ff6b6b;
+    --glass: rgba(255,255,255,0.02);
+    --crt-scan: rgba(0,0,0,0.06);
+    --shadow: 0 10px 40px rgba(0,0,0,0.7);
+    font-family: "Fira Code", "JetBrains Mono", monospace;
+  }
+
+  html,body{height:100%;margin:0;background:transparent;color:var(--text);overflow-x:hidden}
+  
+  .screen {
+    box-sizing:border-box;
+    position:fixed;
+    inset:0;
+    padding:24px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    background: transparent;
+  }
+
+  .term {
+    width: min(1400px, 96vw);
+    height: min(920px, 94vh);
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.45));
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.03);
+    overflow: hidden;
+    display:flex;
+    flex-direction:column;
+    outline: 2px solid rgba(0,255,128,0.02);
+  }
+
+  .term::before{
+    content:"";
+    pointer-events:none;
+    position:absolute;
+    inset:auto;
+    width:100%;
+    height:100%;
+    left:0;
+    top:0;
+    box-shadow: 0 0 120px rgba(0,255,160,0.02), inset 0 0 40px rgba(0,100,60,0.03);
+    mix-blend-mode:screen;
+  }
+
+  .screen .scanlines{
+    pointer-events:none;
+    position:absolute;
+    inset:0;
+    background-image: repeating-linear-gradient(transparent 0px, transparent 1px, rgba(0,0,0,0.03) 2px);
+    mix-blend-mode:multiply;
+    opacity:0.75;
+  }
+
+  .term-top {
+    display:flex;
+    gap:12px;
+    align-items:center;
+    padding:14px 18px;
+    border-bottom:1px solid rgba(255,255,255,0.03);
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+  }
+  .dot { width:12px;height:12px;border-radius:50% }
+  .dot.r{ background: var(--red) }
+  .dot.y{ background: var(--accent) }
+  .dot.g{ background: #47f07a }
+
+  .title {
+    color:var(--muted);
+    margin-left:8px;
+    font-weight:700;
+    letter-spacing:0.06em;
+    font-size:0.95rem;
+  }
+
+  .term-body {
+    position:relative;
+    padding:32px;
+    font-size:16px;
+    line-height:1.65;
+    font-weight:600;
+    color:var(--text);
+    overflow:auto;
+    flex:1;
+    background:
+      radial-gradient(800px 200px at 10% 10%, rgba(0,255,150,0.01), transparent 10%);
+  }
+
+  /* blog specific styles */
+  .blog-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed rgba(140,255,154,0.2);
+  }
+
+  .blog-nav {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 16px;
+  }
+
+  .blog-nav a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    transition: color 0.2s;
+  }
+
+  .blog-nav a:hover {
+    color: var(--text);
+  }
+
+  .nav-current {
+    color: var(--muted);
+  }
+
+  .blog-title {
+    font-size: 1.4rem;
+    color: var(--text);
+    margin: 0;
+    text-shadow: 0 0 20px rgba(140,255,154,0.15);
+  }
+
+  .blog-subtitle {
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 8px;
+  }
+
+  /* post list */
+  .post-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .post-item {
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.2s;
+  }
+
+  .post-item:hover {
+    background: rgba(140,255,154,0.02);
+  }
+
+  .post-date {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+  }
+
+  .post-title-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 1.15rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .post-title-link:hover {
+    color: var(--text);
+    text-shadow: 0 0 10px rgba(246,201,107,0.3);
+  }
+
+  .post-excerpt {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .post-tags {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    background: rgba(140,255,154,0.08);
+    color: var(--text);
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  /* prompt style footer */
+  .blog-footer {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px dashed rgba(140,255,154,0.2);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  /* input row */
+  .input-row {
+    display:flex;
+    gap:8px;
+    align-items:center;
+    margin-top:18px;
+    font-size:1.02rem;
+    position:sticky;
+    bottom:0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.2));
+    padding-top:12px;
+  }
+
+  .prompt { color:var(--accent); font-weight:900; margin-right:6px; }
+  .cwd { color: #83f0c7; margin-right:6px; font-weight:800 }
+  .dollar { color:var(--text) }
+
+  input.cmd {
+    background:transparent;
+    border:none;
+    outline:none;
+    color:var(--text);
+    font-family:inherit;
+    font-weight:800;
+    font-size:1.03rem;
+    width:60%;
+    caret-color:var(--accent);
+  }
+
+  input.cmd:focus { box-shadow: 0 0 20px rgba(255,200,120,0.03) }
+
+  .out { margin:8px 0 12px 0; color:var(--text); font-weight:700; white-space:pre-wrap; }
+  .error { color:var(--red); font-weight:900 }
+  a.terminal-link { color:var(--accent); text-decoration:none; border-bottom:1px dashed rgba(255,200,120,0.15) }
+  a.terminal-link:hover{ color:var(--text); border-bottom-color:var(--accent) }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  @keyframes flicker {
+    0% { opacity:0.75 }
+    50% { opacity:0.88 }
+    100% { opacity:0.75 }
+  }
+  .screen .scanlines { animation:flicker 3s ease-in-out infinite }
+
+  @media (max-width:820px){
+    .term{ border-radius:0; width:100vw; height:100vh; min-height:100vh}
+    .term-body{ padding:18px; font-size:15px }
+    .blog-title{ font-size:1.2rem }
+  }
+</style>
+</head>
+<body>
+  <div class="screen" role="main">
+    <div class="term">
+      <div class="term-top">
+        <div class="dot r"></div>
+        <div class="dot y"></div>
+        <div class="dot g"></div>
+        <div class="title">him7n@omarchy ~/blog</div>
+      </div>
+
+      <div class="term-body">
+        <header class="blog-header">
+          <nav class="blog-nav">
+            <a href="index.html">← cd ..</a>
+            <span class="nav-current">~/blog</span>
+          </nav>
+          <h1 class="blog-title">$ cat /dev/thoughts</h1>
+          <p class="blog-subtitle">// where i document what i build and why</p>
+        </header>
+
+        <ul class="post-list">
+          <li class="post-item">
+            <div class="post-date">2026-01-04 • 12 min read</div>
+            <a href="posts/gitsense.html" class="post-title-link">Building GitSense: The AI-Powered Git + JIRA Workflow Tool</a>
+            <p class="post-excerpt">AI-powered commit messages, PR descriptions, and JIRA field generation from your git diff. Built with bash and Cursor's free AI model.</p>
+            <div class="post-tags">
+              <span class="tag">bash</span>
+              <span class="tag">ai</span>
+              <span class="tag">git</span>
+              <span class="tag">jira</span>
+              <span class="tag">devtools</span>
+              <span class="tag">cli</span>
+            </div>
+          </li>
+        </ul>
+
+        <div id="output" class="out"></div>
+
+        <!-- input row -->
+        <div class="input-row">
+          <div class="prompt">him7n@omarchy</div>
+          <div class="cwd">~/blog</div>
+          <div class="dollar">$</div>
+          <input id="cmd" class="cmd" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus placeholder="type 'help' for commands" />
+        </div>
+      </div>
+    </div>
+
+    <div class="scanlines"></div>
+  </div>
+
+<script>
+(function(){
+  const input = document.getElementById('cmd');
+  const out = document.getElementById('output');
+  const termBody = document.querySelector('.term-body');
+
+  const POSTS = {
+    'gitsense': {
+      title: 'Building GitSense: The AI-Powered Git + JIRA Workflow Tool',
+      date: '2026-01-04',
+      excerpt: 'AI-powered commit messages, PR descriptions, and JIRA field generation from your git diff.',
+      url: 'posts/gitsense.html'
+    }
+  };
+
+  const COMMANDS = ['help','ls','cd','cat','pwd','clear'];
+  const history = [];
+  let histIndex = -1;
+
+  function appendLine(html){
+    out.innerHTML += html + '<br>';
+    termBody.scrollTop = termBody.scrollHeight;
+  }
+
+  function printPrompt(cmd){
+    appendLine(`<span style="color:var(--accent)">him7n@omarchy</span> <span style="color:#83f0c7">~/blog</span> $ ${cmd}`);
+  }
+
+  function runCommand(raw){
+    const args = raw.trim().split(/\s+/);
+    const cmd = args.shift();
+    if(!cmd) return;
+
+    switch(cmd){
+      case 'help':
+        appendLine("Commands: " + COMMANDS.join(' '));
+        appendLine("<span class='muted'>Navigation: cd .. (home) | cd posts/gitsense (read post)</span>");
+        appendLine("<span class='muted'>Preview: cat gitsense (preview post in terminal)</span>");
+        break;
+      case 'ls':
+        appendLine("posts/");
+        for(let p in POSTS) {
+          appendLine(`  <a href="${POSTS[p].url}" class="terminal-link">${p}</a>  <span style="color:var(--muted)">${POSTS[p].date}</span>`);
+        }
+        break;
+      case 'cd':
+        const target = args[0] || '';
+        if(target === '..' || target === '~' || target === '../' || target === '') {
+          window.location.href = 'index.html';
+        } else if(target === 'posts' || target === 'posts/') {
+          appendLine("already in ~/blog (posts are here)");
+        } else if(target.startsWith('posts/') || POSTS[target.replace('posts/','').replace('/','')]) {
+          const postName = target.replace('posts/','').replace('/','');
+          if(POSTS[postName]) {
+            window.location.href = POSTS[postName].url;
+          } else {
+            appendLine(`<span class="error">cd: no such directory: ${target}</span>`);
+          }
+        } else {
+          appendLine(`<span class="error">cd: no such directory: ${target}</span>`);
+        }
+        break;
+      case 'cat':
+        const postName = args[0]?.replace('posts/','').replace('.html','');
+        if(POSTS[postName]) {
+          const p = POSTS[postName];
+          appendLine(`<span style="color:var(--accent);font-weight:700">${p.title}</span>`);
+          appendLine(`<span style="color:var(--muted)">${p.date}</span>`);
+          appendLine('');
+          appendLine(p.excerpt);
+          appendLine('');
+          appendLine(`<a href="${p.url}" class="terminal-link">→ read full post</a>`);
+        } else {
+          appendLine(`<span class="error">cat: ${args[0] || ''}: No such file</span>`);
+          appendLine(`<span class="muted">Available: ${Object.keys(POSTS).join(', ')}</span>`);
+        }
+        break;
+      case 'pwd':
+        appendLine("/home/him7n/blog");
+        break;
+      case 'clear':
+        out.innerHTML = "";
+        break;
+      default:
+        appendLine(`<span class="error">zsh: command not found: ${cmd}</span>`);
+        appendLine(`<span class="muted">type 'help' for available commands</span>`);
+    }
+  }
+
+  input.addEventListener('keydown', e => {
+    if(e.key === 'Enter'){
+      const raw = input.value;
+      printPrompt(raw);
+      runCommand(raw);
+      if(raw) history.push(raw);
+      histIndex = history.length;
+      input.value = '';
+      e.preventDefault();
+    }
+    else if(e.key === 'ArrowUp'){
+      if(histIndex > 0){ histIndex--; input.value = history[histIndex]; }
+      e.preventDefault();
+    }
+    else if(e.key === 'ArrowDown'){
+      if(histIndex < history.length-1){ histIndex++; input.value = history[histIndex]; }
+      else { input.value = ''; histIndex = history.length; }
+      e.preventDefault();
+    }
+    else if(e.key === 'Tab'){
+      e.preventDefault();
+      const val = input.value;
+      // Tab completion for commands
+      const cmdMatch = COMMANDS.filter(c => c.startsWith(val));
+      if(cmdMatch.length === 1) { input.value = cmdMatch[0]; return; }
+      // Tab completion for cd
+      if(val.startsWith('cd ')) {
+        const partial = val.replace('cd ','');
+        const dirs = ['..', 'posts/', ...Object.keys(POSTS).map(p => 'posts/' + p)];
+        const matches = dirs.filter(d => d.startsWith(partial));
+        if(matches.length === 1) input.value = 'cd ' + matches[0];
+        else if(matches.length > 1) appendLine(matches.join('  '));
+      }
+      // Tab completion for cat
+      if(val.startsWith('cat ')) {
+        const partial = val.replace('cat ','');
+        const posts = Object.keys(POSTS);
+        const matches = posts.filter(p => p.startsWith(partial));
+        if(matches.length === 1) input.value = 'cat ' + matches[0];
+        else if(matches.length > 1) appendLine(matches.join('  '));
+      }
+    }
+    else if(e.ctrlKey && e.key.toLowerCase() === 'l'){
+      out.innerHTML = ""; e.preventDefault();
+    }
+  });
+
+  // Focus input on click anywhere
+  document.querySelector('.term-body').addEventListener('click', () => input.focus());
+  input.focus();
+})();
+</script>
+</body>
+</html>
+

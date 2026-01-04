@@ -228,9 +228,9 @@
 
         </div>
 
-        <div class="desc">type <span style="color:var(--accent)"><strong>/help</strong></span> for commands. ↑/↓ = history • Tab = autocomplete • Ctrl+L = clear</div>
+        <div class="desc">type <span style="color:var(--accent)"><strong>help</strong></span> for commands. ↑/↓ = history • Tab = autocomplete • Ctrl+L = clear</div>
 
-        <div class="skills">GitOps Intern • Linux enthusiast • vim/emacs • Nix/Guix • Arch lover</div>
+        <div class="skills">GitOps Intern @ Harness • IIIT Lucknow '26 • Linux • Nix/Guix • Vim</div>
 
         <div id="output" class="out"></div>
 
@@ -268,14 +268,23 @@
   const matrixCanvas = document.getElementById('matrix');
 
   const COMMANDS = [
-    'help','about','projects','skills','links','ls','pwd','whoami',
+    'help','about','projects','skills','links','blog','cd','ls','pwd','whoami',
     'neofetch','cat','echo','open','anime','matrix','clear','exit','sudo'
   ];
 
   const DATA = {
-    about: "Himanshu Sharma (him7n)\n3rd year @ IIIT Lucknow\nLinux + GitOps intern\nNix/Guix + Arch enjoyer",
-    skills: "vim · emacs · nix · guix · linux · gitops · zsh · tmux · docker · react · three.js",
-    links: "GitHub: https://github.com/him7n\nBlog: https://him7n.dev\nEmail: kanekihiman@gmail.com"
+    about: "Himanshu Sharma (him7n)\n3rd year CSE @ IIIT Lucknow\nGitOps Intern @ Harness\nBuilding developer tools with AI",
+    skills: "nix/guix · gitops · nix · docker · vim  · three.js · unity",
+    links: "GitHub: https://github.com/him7n\nBlog: https://him7n.github.io/blog \nEmail: kanekihiman@gmail.com"
+  };
+
+  const BLOG_POSTS = {
+    'gitsense': {
+      title: 'Building GitSense: The AI-Powered Git + JIRA Workflow Tool',
+      date: '2026-01-04',
+      excerpt: 'AI-powered commit messages, PR descriptions, and JIRA field generation from your git diff.',
+      url: 'posts/gitsense.html'
+    }
   };
 
   const ANIME_ASCII = [
@@ -303,16 +312,63 @@
     if(!cmd) return;
 
     switch(cmd){
-      case '/help': appendLine("Commands: " + COMMANDS.join(' ')); break;
+      case 'help': appendLine("Commands: " + COMMANDS.join(' ')); break;
       case 'about': appendLine(DATA.about.replace(/\n/g,"<br>")); break;
       case 'skills': appendLine(DATA.skills); break;
       case 'links': appendLine(DATA.links.replace(/(https?:\/\/[^\s]+)/g, `<a href="$1" target="_blank">$1</a>`).replace(/\n/g,"<br>")); break;
-      case 'ls': appendLine("about  skills  links"); break;
+      case 'blog': window.location.href = 'blog.html'; break;
+      case 'cd':
+        if(args[0] === 'blog' || args[0] === 'blog/') {
+          window.location.href = 'blog.html';
+        } else if(args[0] === '~' || args[0] === '' || !args[0]) {
+          appendLine("already at ~");
+        } else if(args[0]?.startsWith('blog/')) {
+          const postName = args[0].replace('blog/','').replace('/','');
+          if(BLOG_POSTS[postName]) {
+            window.location.href = BLOG_POSTS[postName].url;
+          } else {
+            appendLine(`<span class="error">cd: no such directory: ${args[0]}</span>`);
+          }
+        } else {
+          appendLine(`<span class="error">cd: no such directory: ${args[0]}</span>`);
+        }
+        break;
+      case 'ls': 
+        if(args[0] === 'blog' || args[0] === 'blog/') {
+          appendLine("posts/");
+          for(let p in BLOG_POSTS) {
+            appendLine(`  <a href="${BLOG_POSTS[p].url}" class="terminal-link">${p}</a>  <span style="color:var(--muted)">${BLOG_POSTS[p].date}</span>`);
+          }
+        } else {
+          appendLine("about  skills  links  <a href='blog.html' class='terminal-link'>blog/</a>");
+        }
+        break;
       case 'pwd': appendLine("/home/him7n"); break;
       case 'whoami': appendLine("him7n"); break;
       case 'neofetch': appendLine("him7n@omarchy<br>OS: NixOS + Arch<br>Shell: zsh<br>Editor: Vim/Emacs"); break;
       case 'echo': appendLine(args.join(" ")); break;
-      case 'cat': appendLine(DATA[args[0]] || `cat: ${args[0]}: No such file`); break;
+      case 'cat':
+        const catArg = args[0] || '';
+        // Check for blog posts
+        if(catArg.startsWith('blog/')) {
+          const postName = catArg.replace('blog/','').replace('.html','');
+          if(BLOG_POSTS[postName]) {
+            const p = BLOG_POSTS[postName];
+            appendLine(`<span style="color:var(--accent);font-weight:700">${p.title}</span>`);
+            appendLine(`<span style="color:var(--muted)">${p.date}</span>`);
+            appendLine('');
+            appendLine(p.excerpt);
+            appendLine('');
+            appendLine(`<a href="${p.url}" class="terminal-link">→ read full post</a>`);
+          } else {
+            appendLine(`<span class="error">cat: ${catArg}: No such file</span>`);
+          }
+        } else if(DATA[catArg]) {
+          appendLine(DATA[catArg]);
+        } else {
+          appendLine(`<span class="error">cat: ${catArg}: No such file</span>`);
+        }
+        break;
       case 'anime': appendLine(ANIME_ASCII[Math.floor(Math.random()*ANIME_ASCII.length)].replace(/\n/g,"<br>")); break;
       case 'matrix': toggleMatrix(); appendLine("toggled matrix rain"); break;
       case 'clear': out.innerHTML = ""; boot(); break;
@@ -343,9 +399,38 @@
     }
     else if(e.key === 'Tab'){
       e.preventDefault();
-      const match = COMMANDS.filter(c => c.startsWith(input.value));
-      if(match.length === 1) input.value = match[0];
-      else if(match.length > 1) appendLine(match.join("   "));
+      const val = input.value;
+      // Tab completion for commands
+      if(!val.includes(' ')) {
+        const match = COMMANDS.filter(c => c.startsWith(val));
+        if(match.length === 1) input.value = match[0];
+        else if(match.length > 1) appendLine(match.join("   "));
+        return;
+      }
+      // Tab completion for cd
+      if(val.startsWith('cd ')) {
+        const partial = val.replace('cd ','');
+        const dirs = ['~', 'blog/', ...Object.keys(BLOG_POSTS).map(p => 'blog/' + p)];
+        const matches = dirs.filter(d => d.startsWith(partial));
+        if(matches.length === 1) input.value = 'cd ' + matches[0];
+        else if(matches.length > 1) appendLine(matches.join('  '));
+      }
+      // Tab completion for cat
+      if(val.startsWith('cat ')) {
+        const partial = val.replace('cat ','');
+        const files = ['about', 'skills', 'links', ...Object.keys(BLOG_POSTS).map(p => 'blog/' + p)];
+        const matches = files.filter(f => f.startsWith(partial));
+        if(matches.length === 1) input.value = 'cat ' + matches[0];
+        else if(matches.length > 1) appendLine(matches.join('  '));
+      }
+      // Tab completion for ls
+      if(val.startsWith('ls ')) {
+        const partial = val.replace('ls ','');
+        const dirs = ['blog/'];
+        const matches = dirs.filter(d => d.startsWith(partial));
+        if(matches.length === 1) input.value = 'ls ' + matches[0];
+        else if(matches.length > 1) appendLine(matches.join('  '));
+      }
     }
     else if(e.ctrlKey && e.key.toLowerCase() === 'l'){
       out.innerHTML = ""; boot(); e.preventDefault();
