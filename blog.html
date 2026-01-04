@@ -457,8 +457,21 @@
     }
   });
 
-  // Focus input on click anywhere
-  document.querySelector('.term-body').addEventListener('click', () => input.focus());
+  // Click anywhere to focus input
+  document.querySelector('.term-body').addEventListener('click', (e) => {
+    if(e.target.tagName !== 'A') {
+      input.focus();
+    }
+  });
+
+  // Prevent text selection on the terminal body
+  document.querySelector('.term').addEventListener('mousedown', (e) => {
+    if(e.target.tagName !== 'A' && e.target.id !== 'cmd') {
+      e.preventDefault();
+      input.focus();
+    }
+  });
+
   input.focus();
 })();
 </script>

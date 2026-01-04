@@ -469,6 +469,22 @@
     input.focus();
   }
   boot();
+
+  // Click anywhere to focus input
+  document.querySelector('.term-body').addEventListener('click', (e) => {
+    // Don't steal focus if clicking a link
+    if(e.target.tagName !== 'A') {
+      input.focus();
+    }
+  });
+
+  // Prevent text selection on the terminal body (except output text)
+  document.querySelector('.term').addEventListener('mousedown', (e) => {
+    if(e.target.tagName !== 'A' && e.target.id !== 'cmd') {
+      e.preventDefault();
+      input.focus();
+    }
+  });
 })();
 </script>
 </body>
