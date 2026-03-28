@@ -126,16 +126,11 @@
     transition: color 0.2s;
   }
 
-  .blog-nav a:hover {
-    color: var(--text);
-  }
+  .blog-nav a:hover { color: var(--text); }
 
   .post-meta { margin-bottom: 24px; }
 
-  .post-date {
-    color: var(--muted);
-    font-size: 0.9rem;
-  }
+  .post-date { color: var(--muted); font-size: 0.9rem; }
 
   .post-title {
     font-size: 1.6rem;
@@ -144,11 +139,7 @@
     text-shadow: 0 0 30px rgba(140,255,154,0.2);
   }
 
-  .post-tags {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
+  .post-tags { display: flex; gap: 8px; flex-wrap: wrap; }
 
   .tag {
     background: rgba(140,255,154,0.08);
@@ -186,10 +177,7 @@
     transition: all 0.2s;
   }
 
-  article a:hover {
-    color: var(--text);
-    border-bottom-color: var(--text);
-  }
+  article a:hover { color: var(--text); border-bottom-color: var(--text); }
 
   article ul, article ol { margin: 16px 0; padding-left: 24px; }
   article li { margin: 8px 0; color: var(--text); }
@@ -302,12 +290,8 @@
 
   .terminal-demo .term-content { padding: 16px; }
   .terminal-demo .line { margin: 2px 0; }
-  .terminal-demo .cmd { color: var(--cyan); }
-  .terminal-demo .info { color: var(--muted); }
-  .terminal-demo .separator { color: rgba(140,255,154,0.3); letter-spacing: -1px; }
   .terminal-demo .user-msg { color: var(--accent); }
   .terminal-demo .bot-msg { color: var(--text); }
-  .terminal-demo .cost { color: var(--muted); font-size: 0.8rem; }
 
   .feature-grid {
     display: grid;
@@ -431,7 +415,7 @@
 
         <article>
           <header class="post-meta">
-            <div class="post-date">2026-02-21 &bull; 10 min read</div>
+            <div class="post-date">2026-02-21 &bull; 7 min read</div>
             <h1 class="post-title">her.ai &mdash; Talk to Anyone from Your WhatsApp History</h1>
             <div class="post-tags">
               <span class="tag">python</span>
@@ -446,58 +430,38 @@
 
           <h2>The Idea</h2>
 
-          <p>What if you could text someone &mdash; and an AI replies <em>exactly</em> the way they do? Same slang. Same Hinglish. Same energy. Same emoji game.</p>
+          <p>She blocked you. She's gone. But her chats still haunt you &mdash; that one WhatsApp export sitting in your Downloads folder, thousands of messages you'll never get a reply to again.</p>
 
-          <p>Not a generic chatbot that says <em>"As an AI language model..."</em>. An AI that actually <strong>sounds like that person</strong> because it learned from thousands of real WhatsApp messages between you two.</p>
+          <p>So you do what any reasonable engineer would do &mdash; you build an AI version of her.</p>
 
-          <p>That's <strong>her.ai</strong>. You export a WhatsApp chat, point the tool at it, and start texting. The AI picks up on the other person's vibe &mdash; the way they shorten words, the language switches between Hindi and English, the overuse of "hahaha", all of it.</p>
+          <p>That's <strong>her.ai</strong>. Feed it a WhatsApp chat export, and it texts back <em>exactly</em> the way that person does. Same Hinglish, same slang, same emoji game. Not a generic chatbot &mdash; an AI that actually sounds like <em>them</em> because it learned from thousands of real messages.</p>
 
-          <h2>How It Works</h2>
+          <h2>Two Ways to Run It</h2>
 
-          <p>The architecture is surprisingly simple. No fine-tuning, no training, no GPUs. Just smart context engineering.</p>
-
-          <div class="arch-diagram"><span class="highlight">WhatsApp Export (.txt)</span>
-        &darr;
-<span class="accent">Regex Parser</span> (handles AM/PM, media, deletions)
-        &darr;
-<span class="cyan">Style Extractor</span> (last 60 messages from the persona)
-        &darr;
-<span class="cyan">History Builder</span> (last 400 messages for context)
-        &darr;
-<span class="accent">MCP Server</span> (builds system prompt, tracks session)
-        &darr;
-<span class="highlight">Cursor's LLM</span> (generates reply as the persona)</div>
-
-          <p>The core trick: instead of building a RAG pipeline with vector stores and embeddings, I feed the LLM a carefully constructed prompt containing <strong>style examples</strong> (how the persona actually texts) and <strong>recent history</strong> (what you've been talking about). The LLM does the rest.</p>
-
-          <h2>The MCP Server</h2>
-
-          <p>The interesting part of her.ai is the <strong>MCP server</strong> &mdash; it plugs directly into Cursor IDE as a context provider. No API keys, no rate limits, no external costs. It piggybacks on whatever model Cursor is already running.</p>
-
-          <div class="callout info">
-            <div class="callout-title">What's MCP?</div>
-            <p>Model Context Protocol &mdash; an open standard that lets tools feed context into LLMs. Think of it like a plugin system for AI editors. Your MCP server provides tools that the LLM can call, and the LLM uses the returned context to generate responses.</p>
-          </div>
-
-          <p>The server exposes two tools:</p>
+          <p>her.ai has two approaches. Pick whatever fits your setup:</p>
 
           <div class="feature-grid">
             <div class="feature-card">
-              <h4>chat_as_persona</h4>
-              <p>Send a message, get back the full persona context &mdash; style samples, chat history, session memory. Cursor's LLM reads this and replies in character.</p>
+              <h4>MCP Server (Cursor) &mdash; recommended</h4>
+              <p>Plugs into Cursor IDE via MCP. No separate API keys, no rate limits to worry about. Just type <code>me:</code> and start chatting. If you're already using Cursor, this is the way to go.</p>
             </div>
             <div class="feature-card">
-              <h4>list_chats</h4>
-              <p>Lists available WhatsApp exports, shows participants and message counts. Tells you who the persona will mimic.</p>
+              <h4>Gemini CLI</h4>
+              <p>Standalone Python script that hits the Gemini API directly. Works outside of any editor but needs a Google API key and hits free-tier rate limits after a few minutes.</p>
             </div>
           </div>
 
-          <h2>What It Looks Like</h2>
+          <h2>The MCP Server</h2>
 
-          <p>In Cursor, you just type <code>me:</code> followed by your message. A Cursor Rule auto-triggers the MCP tool, the LLM gets the persona context, and replies as that person.</p>
+          <p>The MCP server plugs into Cursor and uses whatever model the editor already provides. No API keys to manage, no rate limits to hit. You just type <code>me:</code> followed by your message, a Cursor Rule auto-triggers the MCP tool, and the model replies in character.</p>
+
+          <div class="callout info">
+            <div class="callout-title">How MCP works here</div>
+            <p>The server doesn't call any LLM itself. It parses the chat, builds a system prompt with style examples + history, and returns it as context. Cursor's model does the actual generation. You still pay for Cursor, but you skip the hassle of managing separate API keys and rate limits.</p>
+          </div>
 
           <div class="demo-box">
-            <div class="demo-title">Talking to the persona in Cursor</div>
+            <div class="demo-title">Chatting with the persona in Cursor</div>
             <div class="terminal-demo">
               <div class="term-header">
                 <div class="dot r"></div>
@@ -505,174 +469,82 @@
                 <div class="dot g"></div>
               </div>
               <div class="term-content">
-                <div class="line"><span class="user-msg">me:</span> hey kya kar rahi ho</div>
+                <div class="line"><span class="user-msg">me:</span> yaad hai wo raat jab hum 4 baje tak call pe the</div>
                 <div class="line">&nbsp;</div>
-                <div class="line"><span class="bot-msg">kuch nhi bas padhai kar rhi thi</span></div>
-                <div class="line"><span class="bot-msg">tu bata</span></div>
+                <div class="line"><span class="bot-msg">haan lol tu so gya tha beech mein</span></div>
+                <div class="line"><span class="bot-msg">mujhe laga call cut hogyi but nahi</span></div>
+                <div class="line"><span class="bot-msg">tu kharate maar raha tha</span></div>
                 <div class="line">&nbsp;</div>
-                <div class="line"><span class="separator">---</span></div>
+                <div class="line"><span class="user-msg">me:</span> lmaooo sorry yaar</div>
                 <div class="line">&nbsp;</div>
-                <div class="line"><span class="user-msg">me:</span> yaad hai kal ka plan?</div>
-                <div class="line">&nbsp;</div>
-                <div class="line"><span class="bot-msg">haan haan yaad hai</span></div>
-                <div class="line"><span class="bot-msg">10 baje milna hai na</span></div>
+                <div class="line"><span class="bot-msg">sorry kya</span></div>
+                <div class="line"><span class="bot-msg">recording hai mere paas btw</span></div>
               </div>
             </div>
           </div>
 
-          <p>It remembers the conversation across turns. If you mention something from message 1, the reply to message 5 still has that context. Session memory is maintained in-process on the MCP server.</p>
+          <p>The server maintains <strong>session memory</strong> across turns &mdash; a simple in-memory list of <code>(speaker, message)</code> tuples. Each reply you generate gets passed back via <code>previous_persona_reply</code> on the next call, so the conversation stays coherent.</p>
 
-          <h2>The Rabbit Hole</h2>
+          <h2>The Gemini CLI</h2>
 
-          <p>What looks clean now went through about six different iterations. Here's the journey:</p>
-
-          <h3>Attempt 1: Direct Gemini API</h3>
-
-          <p>First try was a Python script hitting Gemini directly with the full chat as context. Problem: the LLM kept <em>analyzing</em> the chat instead of role-playing. It would say things like <em>"Based on the conversation patterns, I observe that..."</em></p>
-
-          <p>Fix: rewrote the system prompt from analytical instructions to direct role-play commands. <em>"You ARE this person. You text like them. Never break character."</em></p>
-
-          <h3>Attempt 2: Custom Parser</h3>
-
-          <p>LangChain's <code>WhatsAppChatLoader</code> couldn't parse the chat format. Indian WhatsApp exports use <code>DD/MM/YY, HH:MM am</code> with lowercase am/pm &mdash; the loader expected uppercase and a different date format entirely.</p>
-
-          <p>Wrote a custom regex parser that handles the actual export format:</p>
+          <p>If you don't use Cursor, there's a standalone CLI that hits the Gemini API directly. It converts each message into a <code>HumanMessage</code> or <code>AIMessage</code>, loads the last 600 as context, and chats in a loop. The persona is auto-detected &mdash; whoever isn't you is the one it mimics.</p>
 
           <div class="code-block">
-<span class="comment"># The regex that actually works with Indian WhatsApp exports</span>
+<span class="comment"># Convert chat history into LangChain messages</span>
+<span class="keyword">for</span> sender, text <span class="keyword">in</span> parsed_msgs:
+    <span class="keyword">if</span> sender == responder_name:
+        lc_messages.append(AIMessage(content=text))
+    <span class="keyword">elif</span> sender == sender_name:
+        lc_messages.append(HumanMessage(content=text))
+</div>
+
+          <p>Works well, but you'll hit Gemini's free-tier rate limit (20 requests/minute) after a few minutes of chatting. That's actually what led to building the MCP server in the first place.</p>
+
+          <h2>The Chat Parser</h2>
+
+          <p>WhatsApp exports are deceptively annoying to parse. The format varies by locale, OS, and app version. Indian exports use <code>DD/MM/YY, HH:MM am</code> (lowercase am/pm) while others use uppercase <code>AM/PM</code> or 24-hour time.</p>
+
+          <p>LangChain's built-in <code>WhatsAppChatLoader</code> choked on the format entirely. Wrote a custom regex parser:</p>
+
+          <div class="code-block">
 pattern = re.compile(
     <span class="string">r'^[\d/]+,\s+[\d:]+\s+[ap]m\s+-\s+([^:]+):\s*(.+)$'</span>,
     re.IGNORECASE
 )
 </div>
 
-          <p>Also filters out <code>&lt;media omitted&gt;</code>, deleted messages, and encryption notices &mdash; stuff that would confuse the persona.</p>
+          <p>It also filters out <code>&lt;media omitted&gt;</code>, deleted messages, and encryption notices. The Rust side of the codebase handles converting between different WhatsApp export formats &mdash; useful when the export uses square-bracket timestamps instead of the dash-separated format.</p>
 
-          <h3>Attempt 3: Rate Limits Hit</h3>
+          <h2>What I Learned</h2>
 
-          <p>Gemini's free tier has a 20 requests/minute limit. After a few minutes of chatting, you hit <code>429 ResourceExhausted</code> and have to wait 45 seconds. Not a great conversational experience.</p>
-
-          <p>This is when the MCP idea clicked &mdash; why pay for API calls when Cursor already has an LLM running? Build a context provider, not a chatbot.</p>
-
-          <h3>Attempt 4: MCP Server (the one that stuck)</h3>
-
-          <p>The MCP server doesn't call any LLM itself. It parses the chat, builds a massive system prompt with style examples and history, and returns it as text. <strong>Cursor's own model</strong> does the generation. Zero API cost. No rate limits.</p>
-
-          <div class="callout">
-            <div class="callout-title">The key insight</div>
-            <p>An MCP server is a <strong>context provider</strong>, not a model. It gives the LLM the right information at the right time. The LLM you already have does the thinking. This flips the economics &mdash; instead of paying per token to an external API, you use whatever model your editor already runs.</p>
-          </div>
-
-          <h2>The Prompt Engineering</h2>
-
-          <p>The system prompt is where the magic happens. Three sections:</p>
-
-          <h3>1. Style Samples</h3>
-
-          <p>The last 60 messages from the persona, presented as examples. The LLM sees exactly <em>how</em> they text &mdash; word choice, abbreviations, language mixing, message length. Not a description of their style, but the actual messages.</p>
-
-          <h3>2. Recent History</h3>
-
-          <p>The last 400 messages between both people. This gives the LLM relationship context &mdash; inside jokes, shared plans, how they address each other, ongoing topics.</p>
-
-          <h3>3. Session Memory</h3>
-
-          <p>The current conversation (this session). Each turn gets appended to an in-memory list. When the LLM generates a reply, the Cursor Rule passes it back via <code>previous_persona_reply</code> on the next call, so the server logs it into history.</p>
-
-          <div class="code-block">
-<span class="comment"># Session memory: list of (speaker, message) tuples</span>
-<span class="comment"># Persists across turns within a single MCP server process</span>
-session_messages: list[tuple[str, str]] = []
-
-<span class="comment"># On each call, the previous LLM-generated reply is logged</span>
-<span class="keyword">if</span> previous_reply:
-    session_messages.append((responder_name, previous_reply))
-session_messages.append((sender_name, message))
-</div>
-
-          <h2>Rust + Python</h2>
-
-          <p>The project is bilingual. Rust handles <strong>high-performance chat parsing</strong> (converting between WhatsApp export formats), while Python handles the <strong>ML/RAG layer</strong> and the MCP server.</p>
-
-          <p>Why Rust for parsing? WhatsApp exports can be huge &mdash; tens of thousands of messages. Rust's regex engine is fast enough to parse them in milliseconds. The Rust binary converts bracket-format exports (<code>[DD/MM/YY, HH:MM:SS]</code>) to the simpler format the Python parser expects.</p>
-
-          <p>The Python side uses <code>uv</code> for dependency management &mdash; one <code>uv sync</code> and everything's installed. The MCP server runs via <code>uv run python mcp_server.py</code>, which Cursor launches automatically from the config.</p>
-
-          <h2>Alternative Approaches</h2>
-
-          <p>her.ai includes three other RAG approaches beyond the MCP server, in case you want to experiment:</p>
-
-          <div class="feature-grid">
-            <div class="feature-card">
-              <h4>Gemini Direct</h4>
-              <p>Full chat history as context, direct prompting. Works well but hits rate limits on free tier.</p>
-            </div>
-            <div class="feature-card">
-              <h4>Ollama + FAISS</h4>
-              <p>Fully local RAG. No API keys, no internet. Uses Ollama for embeddings and generation, FAISS for vector search.</p>
-            </div>
-            <div class="feature-card">
-              <h4>OpenAI + Chroma</h4>
-              <p>Cloud RAG with OpenAI embeddings and Chroma vector store. Better retrieval quality, but costs money.</p>
-            </div>
-          </div>
-
-          <p>The MCP approach won because it's the only one that's <strong>free, fast, and integrated</strong> into the editor. No context switching. No separate terminal. Just chat in your IDE.</p>
+          <ul>
+            <li><strong>Style examples > descriptions</strong> &mdash; Telling the LLM "they use Hinglish" doesn't work. Showing it 60 real messages from that person does.</li>
+            <li><strong>Parsers are never simple</strong> &mdash; Lowercase am/pm broke the parser silently. Zero messages parsed, no errors. Case-insensitive regex saved it.</li>
+            <li><strong>MCP as a middle ground</strong> &mdash; You still pay for Cursor's model usage, but you skip separate API key management and rate limit headaches. It's not free &mdash; it's just more convenient than raw HTTP calls to Gemini/OpenAI.</li>
+            <li><strong>Style > Knowledge</strong> &mdash; 60 real message samples teach the LLM more about someone's texting vibe than any written description could.</li>
+          </ul>
 
           <h2>Setup</h2>
-
-          <div class="callout">
-            <div class="callout-title">What you need</div>
-            <p>
-              <strong>Cursor IDE</strong> &mdash; or any editor that supports MCP.<br>
-              <strong>Python 3.10+</strong> &mdash; with <code>uv</code> for package management.<br>
-              <strong>A WhatsApp chat export</strong> &mdash; exported as .txt without media.
-            </p>
-          </div>
 
           <div class="code-block">
 <span class="comment"># Clone and install</span>
 <span class="command">git clone https://github.com/rootCircle/her.ai</span>
-<span class="command">cd her.ai/whatrag</span>
-<span class="command">uv sync</span>
+<span class="command">cd her.ai/whatrag && uv sync</span>
 
-<span class="comment"># Export a WhatsApp chat and drop it in</span>
-<span class="command">cp ~/Downloads/WhatsApp\ Chat.txt ../chat_files/chat.txt</span>
+<span class="comment"># Drop your WhatsApp export in chat_files/</span>
+<span class="command">cp ~/Downloads/chat.txt ../chat_files/</span>
 
-<span class="comment"># Copy and edit MCP config for Cursor</span>
+<span class="comment"># Gemini CLI (needs GOOGLE_API_KEY in .env)</span>
+<span class="command">cp .sample.env .env && uv run cli_chat.py</span>
+
+<span class="comment"># MCP in Cursor (copy and edit mcp.json, restart Cursor)</span>
 <span class="command">cp .cursor/mcp.sample.json .cursor/mcp.json</span>
-<span class="comment"># Set SENDER_NAME to your name as it appears in the chat</span>
 </div>
-
-          <p>Restart Cursor. The MCP server starts automatically. Type <code>me: hey</code> in Cursor's chat and the persona replies.</p>
-
-          <h2>The Hard-Won Lessons</h2>
-
-          <ul>
-            <li><strong>Prompt > Architecture.</strong> I tried RAG, vector stores, and embeddings. In the end, a well-crafted system prompt with raw chat examples outperformed all of them for persona mimicry.</li>
-            <li><strong>Parsers are never simple.</strong> WhatsApp exports differ by locale, OS, and version. The regex that works for one person's chat breaks on another's. Case-insensitive matching and flexible date patterns saved the day.</li>
-            <li><strong>MCP flips the cost model.</strong> Instead of paying per API call, you build a context provider and let the editor's built-in model do the work. Same quality, zero marginal cost.</li>
-            <li><strong>Session memory matters.</strong> Without it, every message is a cold start. The persona forgets what you just said. A simple in-memory list of <code>(speaker, text)</code> tuples fixed it.</li>
-            <li><strong>Style > Knowledge.</strong> For persona simulation, matching <em>how</em> someone texts matters more than <em>what</em> they know. 60 raw message examples teach the LLM more about someone's vibe than any description could.</li>
-          </ul>
-
-          <h2>What's Next</h2>
-
-          <p>A few ideas I'm playing with:</p>
-
-          <ul>
-            <li><strong>Multi-chat support</strong> &mdash; swap personas on the fly with <code>list_chats</code></li>
-            <li><strong>Group chat mode</strong> &mdash; simulate multiple people from a group chat</li>
-            <li><strong>Voice notes</strong> &mdash; feed transcribed voice messages into the style samples</li>
-            <li><strong>Persistence</strong> &mdash; save session history to disk so it survives server restarts</li>
-          </ul>
-
-          <p>But honestly? The current version already makes people do a double-take when they see the replies. Ship it.</p>
 
           <div class="callout">
             <div class="callout-title">Links</div>
             <p>
-              <a href="https://github.com/rootCircle/her.ai" target="_blank">GitHub: rootCircle/her.ai</a> &mdash; Full source code, README, and setup instructions.
+              <a href="https://github.com/rootCircle/her.ai" target="_blank">GitHub: rootCircle/her.ai</a> &mdash; Source code and full setup instructions.
             </p>
           </div>
 
